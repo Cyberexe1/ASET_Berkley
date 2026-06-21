@@ -55,7 +55,7 @@
 
 ## What is ASET?
 
-ASET stops AI hallucinations and misinformation by verifying scientific claims against 1.2M+ peer-reviewed papers across 8 domains — in real time.
+ASET stops AI hallucinations and misinformation by verifying scientific claims against 1.2M+ peer-reviewed papers across 8 domains - in real time.
 
 **The problem:** 46% of AI-generated citations are fabricated. Students, teachers, journalists, and content creators unknowingly spread misinformation backed by fake research.
 
