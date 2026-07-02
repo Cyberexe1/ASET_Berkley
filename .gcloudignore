@@ -1,0 +1,16 @@
+.gcloudignore
+.git
+.gitignore
+node_modules
+ASET frontend
+aset-extension
+database
+scripts
+arxiv-bulk
+uploads
+*.db
+*.zip
+*.pem
+.env
+.env.*
+.vscode
