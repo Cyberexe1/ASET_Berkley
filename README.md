@@ -305,6 +305,4 @@ Load unpacked from `aset-extension/` in Chrome. Right-click any selected text to
 
 ## Team
 
-- Om Singh (jayom5797)
-- Utsav Singh (utsavsingh35)
 - Vikas Tiwari (vikas2731)
