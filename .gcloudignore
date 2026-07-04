@@ -1,13 +1,16 @@
+.gcloudignore
+.git
+.gitignore
 node_modules
+ASET frontend
+aset-extension
 database
 scripts
 arxiv-bulk
-ASET frontend
-frontend
 uploads
 *.db
 *.zip
 *.pem
-.git
 .env
 .env.*
+.vscode

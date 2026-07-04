@@ -77,6 +77,7 @@ app.use(cors({
     'https://aset-ai.tech',
     'https://www.aset-ai.tech',
     'https://aset-ai.com',
+    'https://aset-frontend-806873019125.asia-south1.run.app',
     'http://localhost:5173',
     'http://localhost:3000'
   ],

@@ -55,7 +55,7 @@
 
 ## What is ASET?
 
-ASET stops AI hallucinations and misinformation by verifying scientific claims against 1.2M+ peer-reviewed papers across 8 domains - in real time.
+ASET stops AI hallucinations and misinformation by verifying scientific claims against 1.2M+ peer-reviewed papers across 8 domains — in real time.
 
 **The problem:** 46% of AI-generated citations are fabricated. Students, teachers, journalists, and content creators unknowingly spread misinformation backed by fake research.
 
@@ -83,10 +83,13 @@ ASET stops AI hallucinations and misinformation by verifying scientific claims a
 
 ```
 React Frontend (Vite)            Node.js Backend (Express)
-CloudFront CDN                   App Runner / Docker
+Google Cloud Run                 Google Cloud Run
 https://aset-ai.tech             https://api.aset-ai.tech
         │                                 │
         └────────── HTTPS API ────────────┘
+                                          │
+                       Container images — Google Artifact Registry
+                       Secrets — Google Secret Manager
                                           │
                             ┌─────────────────────────┐
                             │     Agent Pipeline       │
@@ -103,7 +106,7 @@ https://aset-ai.tech             https://api.aset-ai.tech
                                Redis — agent memory, research cache,
                                verification history, rate limiting
                                           │
-                               Groq LLaMA 3.3 70B
+                               Google Gemini API
                                Claim extraction + verification
                                           │
                                Arize Phoenix — LLM observability,
@@ -124,9 +127,10 @@ https://aset-ai.tech             https://api.aset-ai.tech
 |-------|-----------|
 | Frontend | React 19, Vite 7, globe.gl |
 | Backend | Node.js 22, Express |
+| Deployment | Google Cloud Run, Artifact Registry, Secret Manager |
 | Database | Turso (libSQL/SQLite) with FTS5 |
 | Cache & Memory | Redis — research cache, agent memory, verification history |
-| AI | Groq LLaMA 3.3 70B (multi-key rotation) |
+| AI | Google Gemini API (multi-key rotation) |
 | Agent Framework | Fetch.ai Agentverse (uAgents) |
 | Message Bus | Band Protocol (inter-agent relay) |
 | Observability | Arize Phoenix — LLM tracing, hallucination detection |
@@ -203,7 +207,7 @@ POST /api/browserbase/search     { "claim": "..." }
 ```
 
 ### Arize Phoenix
-Every Groq LLM call is wrapped in an OpenTelemetry span sent to Arize Phoenix. Traces include hallucination risk signals (high confidence + empty evidence), confidence calibration checks, and per-paper stance classification metrics.
+Every Gemini LLM call is wrapped in an OpenTelemetry span sent to Arize Phoenix. Traces include hallucination risk signals (high confidence + empty evidence), confidence calibration checks, and per-paper stance classification metrics.
 
 ```bash
 GET /api/arize/status
@@ -241,7 +245,7 @@ Required environment variables — copy `.env.example` to `.env` and fill in:
 ```bash
 # Core
 TURSO_DATABASE_URL=...
-GROQ_API_KEY=...
+GEMINI_API_KEY=...
 
 # Sponsor integrations (all optional — degrade gracefully if not set)
 REDIS_URL=redis://localhost:6379
@@ -250,6 +254,29 @@ ARIZE_API_KEY=...
 BAND_MNEMONIC=...
 FETCHAI_RESEARCH_MAILBOX_KEY=...
 ```
+
+### Deploying to Google Cloud Run
+
+```bash
+# Build & push backend image
+gcloud builds submit --tag <region>-docker.pkg.dev/<project-id>/aset-backend/aset-backend:latest .
+
+# Deploy backend
+gcloud run deploy aset-backend \
+  --image=<region>-docker.pkg.dev/<project-id>/aset-backend/aset-backend:latest \
+  --region=<region> --allow-unauthenticated --port=3001 \
+  --set-secrets="TURSO_DATABASE_URL=TURSO_DATABASE_URL:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest,..."
+
+# Build & deploy frontend (Vite build baked with VITE_API_URL, served via Nginx)
+cd "ASET frontend"
+gcloud builds submit --config=cloudbuild.yaml \
+  --substitutions="_IMAGE=<region>-docker.pkg.dev/<project-id>/aset-frontend/aset-frontend:latest,_VITE_API_URL=https://<backend-cloud-run-url>" .
+gcloud run deploy aset-frontend \
+  --image=<region>-docker.pkg.dev/<project-id>/aset-frontend/aset-frontend:latest \
+  --region=<region> --allow-unauthenticated --port=8080
+```
+
+Secrets (Gemini/Turso/YouTube/Gmail keys) are stored in Google Secret Manager and injected as environment variables at deploy time — never baked into the container image.
 
 ---
 

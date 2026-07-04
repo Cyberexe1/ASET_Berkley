@@ -10,7 +10,6 @@ RUN npm ci --omit=dev
 
 # Copy backend source
 COPY backend/ ./backend/
-COPY .env ./
 
 # Create uploads directory
 RUN mkdir -p uploads
